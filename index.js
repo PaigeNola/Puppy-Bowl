@@ -2,24 +2,30 @@
 
 //If you would like to, you can create a variable to store the API_URL here.
 //This is optional. if you do not want to, skip this and move on.
-
+let baseApiUrl = "https://fsa-puppy-bowl.herokuapp.com/api/2605-Paige";
 /////////////////////////////
 /*This looks like a good place to declare any state or global variables you might need*/
-
+let state = { players: [] };
 ////////////////////////////
 
 /**
- * Fetches all players from the API.
- * This function should not be doing any rendering
+ * Fetches all players from the API. Done!
+ * This function should not be doing any rendering Done!
  * Instead, this function should be keeping our state up to date
  */
 const fetchAllPlayers = async () => {
   //TODO
+  const response = await fetch(`${baseApiUrl}/players`);
+  const playersData = await response.json();
+  console.log(playersData);
+  return playersData;
 };
 
+// fetchAllPlayers();
+
 /**
- * Fetches a single player from the API.
- * This function should not be doing any rendering
+ * Fetches a single player from the API. Done!
+ * This function should not be doing any rendering Done!
  * Instead, this function should be keeping our state up to date
  * @param {number} playerId
  */
@@ -29,7 +35,14 @@ const fetchAllPlayers = async () => {
  */
 const fetchSinglePlayer = async (playerId) => {
   //TODO
+  const response = await fetch(`${baseApiUrl}/players/${playerId}`);
+  console.log(response);
+  const singlePlayerData = await response.json();
+  console.log(singlePlayerData);
+  return singlePlayerData;
 };
+
+// fetchSinglePlayer(57328);
 
 /**
  * Adds a new player to the roster via the API.
@@ -39,6 +52,7 @@ const fetchSinglePlayer = async (playerId) => {
  */
 /* Note: we need data from our user to be able to add a new player
  * What does that sound like we need?
+
  */
 /**
  * Note#2: addNewPlayer() expects you to pass in a
@@ -48,10 +62,26 @@ const fetchSinglePlayer = async (playerId) => {
 
 const addNewPlayer = async (newPlayer) => {
   //TODO
+  const response = await fetch(`${baseApiUrl}/players`, {
+    method: "POST",
+    body: newPlayer,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+  const newPlayerData = await response.json();
+  console.log(newPlayerData);
+  return response.status;
 };
 
+addNewPlayer({
+  breed: "Chihuahua / Miniature Poodle",
+  name: "Jack",
+  status: "bench"
+});
+
 /**
- * Removes a player from the roster via the API.
+ * Removes a player from the roster via the API. Done!
  * Once the player is removed from the database,
  * the player should also be removed from our view without refreshing
  * @param {number} playerId the ID of the player to remove
@@ -63,7 +93,14 @@ const addNewPlayer = async (newPlayer) => {
 
 const removePlayer = async (playerId) => {
   //TODO
+  const response = await fetch(`${baseApiUrl}/players/${playerId}`, {
+    method: "DELETE"
+  });
+  console.log(response);
+  return response.status;
 };
+
+// removePlayer(57328);
 
 /**
  * Updates html to display a list of all players or a single player page.
