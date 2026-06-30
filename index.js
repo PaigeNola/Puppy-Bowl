@@ -16,12 +16,34 @@ let state = { players: [] };
 const fetchAllPlayers = async () => {
   //TODO
   const response = await fetch(`${baseApiUrl}/players`);
-  const playersData = await response.json();
-  console.log(playersData);
-  return playersData;
+  const result = await response.json();
+  state.players = result.data.players;
+  return state.players;
 };
 
-// fetchAllPlayers();
+const renderRoster = () => {
+  const rosterContainer = document.getElementById("roster");
+  rosterContainer.innerHTML = "";
+
+  if (state.players.length === 0) {
+    rosterContainer.innerHTML = "<p>No puppies to show</p>";
+    return;
+  }
+
+  state.players.forEach((player) => {
+    const playerInfo = document.createElement("div");
+    playerInfo.className = "playerInfo";
+    playerInfo.innerHTML = `
+      <h3>${player.name}</h3>
+      <img src="${player.imageUrl}" alt="${player.name}" style="width: 150px;" />
+    `;
+    playerInfo.addEventListener("click", async () => {
+      const fullPluppyData = await fetchSinglePlayer(player.id);
+      renderDetails(fullPluppyData);
+    });
+    rosterContainer.appendChild(playerInfo);
+  });
+};
 
 /**
  * Fetches a single player from the API. Done!
@@ -36,13 +58,43 @@ const fetchAllPlayers = async () => {
 const fetchSinglePlayer = async (playerId) => {
   //TODO
   const response = await fetch(`${baseApiUrl}/players/${playerId}`);
-  console.log(response);
-  const singlePlayerData = await response.json();
-  console.log(singlePlayerData);
-  return singlePlayerData;
+  // console.log(response);
+  const result = await response.json();
+  // console.log(singlePlayerData);
+  return result.data.player;
 };
 
 // fetchSinglePlayer(57328);
+
+const renderDetails = (player) => {
+  const detailsContainer = document.getElementById("stats");
+  let teamName;
+  if (player.team) {
+    teamName = player.team.name;
+  } else {
+    teamName = "Unassigned";
+  }
+
+  detailsContainer.innerHTML = `<h2>Puppy Selection</h2>
+    <div class="detailsCard">
+      <h3>${player.name}</h3>
+      <p>ID: ${player.id}</p>
+      <p>Breed: ${player.breed}</p>
+      <p>Status: ${player.status}</p>
+      <p>Team: ${teamName}</p>
+      <img src="${player.imageUrl}" alt="${player.name}" />
+      <br />
+      <button id="delete" data-id="${player.id}">Delete from Roster</button>
+    </div>`;
+
+  const deleteBtn = document.getElementById("delete");
+  deleteBtn.addEventListener("click", async () => {
+    await removePlayer(player.id);
+    await fetchAllPlayers();
+    renderRoster();
+    detailsContainer.innerHTML = "<p>Click a Puppy to see its stats!</p>";
+  });
+};
 
 /**
  * Adds a new player to the roster via the API.
@@ -64,21 +116,37 @@ const addNewPlayer = async (newPlayer) => {
   //TODO
   const response = await fetch(`${baseApiUrl}/players`, {
     method: "POST",
-    body: newPlayer,
     headers: {
       "Content-Type": "application/json"
-    }
+    },
+    body: JSON.stringify(newPlayer)
   });
+
   const newPlayerData = await response.json();
-  console.log(newPlayerData);
-  return response.status;
+  // console.log(newPlayerData);
+  return newPlayerData;
 };
 
-addNewPlayer({
-  breed: "Chihuahua / Miniature Poodle",
-  name: "Jack",
-  status: "bench"
-});
+const makeForm = () => {
+  const addPuppyForm = document.getElementById("newPuppy");
+
+  addPuppyForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const name = document.getElementById("name");
+    const breed = document.getElementById("breed");
+
+    const newPuppyObj = {
+      name: name.value,
+      breed: breed.value,
+      status: "bench"
+    };
+    await addNewPlayer(newPuppyObj);
+    addPuppyForm.reset();
+    await fetchAllPlayers();
+    render();
+  });
+};
 
 /**
  * Removes a player from the roster via the API. Done!
@@ -96,7 +164,7 @@ const removePlayer = async (playerId) => {
   const response = await fetch(`${baseApiUrl}/players/${playerId}`, {
     method: "DELETE"
   });
-  console.log(response);
+  // console.log(response);
   return response.status;
 };
 
@@ -120,6 +188,7 @@ const removePlayer = async (playerId) => {
  */
 const render = () => {
   // TODO
+  renderRoster();
 };
 
 /**
@@ -128,7 +197,8 @@ const render = () => {
  */
 const init = async () => {
   //Before we render, what do we always need?
-
+  await fetchAllPlayers();
+  makeForm();
   render();
 };
 
