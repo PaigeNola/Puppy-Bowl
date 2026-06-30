@@ -35,7 +35,7 @@ const renderRoster = () => {
     playerInfo.className = "playerInfo";
     playerInfo.innerHTML = `
       <h3>${player.name}</h3>
-      <img src="${player.imageUrl}" alt="${player.name}" style="width: 150px;" />
+      <img src="${player.imageUrl}" alt="${player.name}" />
     `;
     playerInfo.addEventListener("click", async () => {
       const fullPluppyData = await fetchSinglePlayer(player.id);
